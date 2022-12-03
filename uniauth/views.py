@@ -106,8 +106,8 @@ def _get_global_context(request):
     return context
 
 
-def _get_redirect_url_with_tokens(url, access, refresh, username):
-    query_string = f'?access={access}&refresh={refresh}&username={username}'
+def _get_redirect_url_with_tokens(url, access, refresh, userid):
+    query_string = f'?access={access}&refresh={refresh}&userid={userid}'
     return HttpResponseRedirect(url + query_string)
 
 
@@ -146,7 +146,7 @@ def _login_success(request, user, next_url, drop_params=[]):
             refresh, access = get_jwt_tokens_for_user(user)
             request.session["jwt-refresh"] = refresh
             request.session["jwt-access"] = access
-            return _get_redirect_url_with_tokens(next_url, access, refresh, user.username)
+            return _get_redirect_url_with_tokens(next_url, access, refresh, user.id)
         return HttpResponseRedirect(next_url + suffix)
 
 
