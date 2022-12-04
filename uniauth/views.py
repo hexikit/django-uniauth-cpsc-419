@@ -58,7 +58,7 @@ from uniauth.utils import (
     is_tmp_user,
     is_unlinked_account,
 )
-
+from urllib import request, parse
 try:
     from urllib import urlencode
 
@@ -111,6 +111,19 @@ def _get_redirect_url_with_tokens(url, access, refresh, userid, username):
     return HttpResponseRedirect(url + query_string)
 
 
+def _create_profile(userid):
+    data_dict = {
+        'userid': userid,
+    }
+    data = parse.urlencode(data_dict).encode()
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    req = request.Request("http://127.0.0.1:8000/profiles/", data=data) 
+    resp = request.urlopen(req)
+
+
 def _login_success(request, user, next_url, drop_params=[]):
     """
     Determines where to go upon successful authentication:
@@ -146,6 +159,8 @@ def _login_success(request, user, next_url, drop_params=[]):
             refresh, access = get_jwt_tokens_for_user(user)
             request.session["jwt-refresh"] = refresh
             request.session["jwt-access"] = access
+
+            _create_profile(user.id)
             return _get_redirect_url_with_tokens(next_url, access, refresh, user.id, user.username)
         return HttpResponseRedirect(next_url + suffix)
 
